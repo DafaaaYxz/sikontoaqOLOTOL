@@ -24,7 +24,6 @@ const BootSequence: React.FC<BootSequenceProps> = ({ onComplete }) => {
       "Checking dependencies...",
       "  - react... ok",
       "  - tailwind... ok",
-      "  - gemini-api... connected",
       "booting CentralGPT kernel v2.0...",
       "SYSTEM READY"
     ];
