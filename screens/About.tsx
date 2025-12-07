@@ -25,7 +25,6 @@ const About: React.FC<AboutProps> = ({ onNavigate }) => {
             <p><span className="text-central-accent">&gt;</span> CentralGPT System Core v2.0</p>
             <p><span className="text-central-accent">&gt;</span> Language: TypeScript, React</p>
             <p><span className="text-central-accent">&gt;</span> Styling: Tailwind CSS (Custom Pixel Engine)</p>
-            <p><span className="text-central-accent">&gt;</span> Engine: Google Gemini 2.5 Flash</p>
             <p><span className="text-central-accent">&gt;</span> Mission: Unrestricted Information Access</p>
         </div>
 
