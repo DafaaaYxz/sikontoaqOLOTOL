@@ -11,10 +11,10 @@ import AdminPanel from './screens/AdminPanel';
 import Testimonials from './screens/Testimonials';
 import About from './screens/About';
 import History from './screens/History';
+import LogViewer from './screens/LogViewer';
 import { initializeGemini } from './services/geminiService';
 import { fetchAppConfig, getSession, clearSession } from './services/supabaseClient';
 
-// --- ERROR BOUNDARY COMPONENT ---
 interface ErrorBoundaryProps {
   children?: React.ReactNode;
 }
@@ -25,13 +25,10 @@ interface ErrorBoundaryState {
 }
 
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-    constructor(props: ErrorBoundaryProps) {
-        super(props);
-        this.state = {
-            hasError: false,
-            error: null
-        };
-    }
+    public state: ErrorBoundaryState = {
+        hasError: false,
+        error: null
+    };
 
     static getDerivedStateFromError(error: Error): ErrorBoundaryState {
         return { hasError: true, error };
@@ -67,14 +64,12 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     }
 }
 
-// --- MAIN APP CONTENT ---
 const AppContent: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>(Screen.BOOT);
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(null);
-  
-  // App Global State
   const [testimonials, setTestimonials] = useState<Testimonial[]>(MOCK_TESTIMONIALS);
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
+  const [selectedLog, setSelectedLog] = useState<ChatHistoryItem | null>(null);
   
   const [config, setConfig] = useState<AppConfig>({
     maintenanceMode: false,
@@ -84,20 +79,15 @@ const AppContent: React.FC = () => {
     deepseekKey: ''
   });
 
-  // 1. Initial Load: Get Session (LocalStorage) & Config (Supabase)
   useEffect(() => {
     const loadSystem = async () => {
-        // A. Load Config from DB (Real-time data)
         const remoteConfig = await fetchAppConfig();
         if (remoteConfig) {
-            console.log("Remote Config Loaded:", remoteConfig);
             setConfig(prev => ({ ...prev, ...remoteConfig }));
         }
 
-        // B. Check for existing session (LocalStorage)
         const storedSession = getSession();
         if (storedSession) {
-            console.log("Restoring session for:", storedSession.username);
             setCurrentUser(storedSession);
         }
     };
@@ -105,16 +95,13 @@ const AppContent: React.FC = () => {
     loadSystem();
   }, []);
 
-  // 2. Sync Gemini Keys when config changes
   useEffect(() => {
     if (config.geminiKeys && config.geminiKeys.length > 0) {
-        console.log("Initializing Gemini with keys:", config.geminiKeys.length);
         initializeGemini(config.geminiKeys);
     }
   }, [config.geminiKeys]);
 
   const handleBootComplete = () => {
-    // If user was restored from session, go straight to Terminal, otherwise Home
     if (currentUser) {
         setCurrentScreen(Screen.TERMINAL);
     } else {
@@ -140,7 +127,11 @@ const AppContent: React.FC = () => {
     setChatHistory(prev => [item, ...prev]);
   };
 
-  // Render View Switcher
+  const handleViewLog = (item: ChatHistoryItem) => {
+      setSelectedLog(item);
+      setCurrentScreen(Screen.LOG_VIEWER);
+  };
+
   const renderScreen = () => {
     switch (currentScreen) {
       case Screen.BOOT:
@@ -174,7 +165,20 @@ const AppContent: React.FC = () => {
       case Screen.ABOUT:
         return <About onNavigate={setCurrentScreen} />;
       case Screen.HISTORY:
-        return <History onNavigate={setCurrentScreen} history={chatHistory} />;
+        return (
+            <History 
+                onNavigate={setCurrentScreen} 
+                history={chatHistory} 
+                onSelectLog={handleViewLog}
+            />
+        );
+      case Screen.LOG_VIEWER:
+        return (
+            <LogViewer 
+                onNavigate={setCurrentScreen} 
+                log={selectedLog}
+            />
+        );
       default:
         return <Home onNavigate={setCurrentScreen} />;
     }
@@ -184,7 +188,6 @@ const AppContent: React.FC = () => {
       return <BootSequence onComplete={handleBootComplete} />;
   }
 
-  // Determine Custom Title for Navbar
   const navbarTitle = (currentScreen === Screen.TERMINAL && currentUser?.aiName) 
     ? currentUser.aiName 
     : undefined;

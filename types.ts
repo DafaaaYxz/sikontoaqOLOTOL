@@ -7,7 +7,8 @@ export enum Screen {
   ADMIN = 'ADMIN',
   TESTIMONIALS = 'TESTIMONIALS',
   ABOUT = 'ABOUT',
-  HISTORY = 'HISTORY'
+  HISTORY = 'HISTORY',
+  LOG_VIEWER = 'LOG_VIEWER'
 }
 
 export interface UserAccount {
@@ -22,7 +23,7 @@ export interface UserAccount {
 export interface Testimonial {
   id: string;
   text: string;
-  imageData?: string; // Base64 string from file upload
+  imageData?: string; 
 }
 
 export interface ChatMessage {
@@ -45,6 +46,6 @@ export interface AppConfig {
   maintenanceMode: boolean;
   featureVoice: boolean;
   featureImage: boolean;
-  geminiKeys: string[]; // Changed to array for multiple keys
+  geminiKeys: string[]; 
   deepseekKey: string; 
 }
